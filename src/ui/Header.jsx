@@ -1,8 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 const Head = styled.header`
-background-color: green;
-height: 100px;
+padding: 8px;
+height: 60px;
+border-bottom:  1px solid gray;
 `
 const Header = () => {
   return (
