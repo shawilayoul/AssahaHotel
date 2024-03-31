@@ -1,37 +1,38 @@
-import React, { useEffect, useState } from "react";
-import { getCabins } from "../services/apiCabins";
-import { useQuery } from "@tanstack/react-query";
+import { deleteCabins, getCabins } from "../services/apiCabins";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import CabinTable from "../features/cabins/CabinTable";
+import toast from "react-hot-toast";
 
 const Cabins = () => {
   const cabins = useQuery({
-    queryKey: ["cabin"],
+    queryKey: ["cabins"],
     queryFn: getCabins,
   });
+   // Mutations
+   const queryClient = useQueryClient()
+   const {isLoading ,mutate} = useMutation({
+    mutationFn:(id)=> deleteCabins(id),
+    onSuccess: () => {
+      // Invalidate and refetch
+      toast.success('cabin has been deleted successfully')
+      queryClient.invalidateQueries({ queryKey: ['cabins'] })
+    },
+    onError:(err)=>toast.error(err.message)
+  })
 
   return (
     <div>
-      <div>
-        <h3>All Cabins</h3>
-        <p>Filter/Sort</p>
-      </div>
-      <div>
-        <ul>
-          <li>Cabin</li>
-          <li>Capacity</li>
-          <li>Price</li>
-          <li>Discount</li>
-        </ul>
-      </div>
-      <ul>
-        {cabins.data?.map(({image,name,maxCapacity,regularPrice,discount,description}) => {
+      <CabinTable/>
+      <ul className="p-5 border-1">
+        {cabins.data?.map(({id: cabinId,image,name,maxCapacity,regularPrice,discount,description}) => {
           return (
-            <div>
-              <img style={{ width: "100px" }} src={image} alt="" />
+            <div className="flex justify-between gap-5 border-y-1">
+              <img style={{ width: "100px",height:"100px", marginBottom:"10px"}} src={image} alt="" />
                <h3>{name}</h3>
                <h3>{maxCapacity}</h3>
                <h3>{regularPrice}</h3>
                <h3>{discount}</h3>
-               <h3>{description}</h3>
+               <button className=" bg-black text-white mb-2 h-8 p-2 rounded" disabled={isLoading} onClick={()=>mutate(cabinId)}>delete</button>
             </div>
           );
         })}
