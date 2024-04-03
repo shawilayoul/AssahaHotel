@@ -9,10 +9,11 @@ const ApplayOutStyle = styled.div`
   grid-template-columns: 18rem 1fr;
   grid-template-rows: auto 1fr;
   height: 100vh;
+  overflow: hidden;
 `;
 
 const Main = styled.main`
-  background-color: lightgray;
+  overflow: scroll;
 `;
 
 const AppLayOut = () => {

@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { createCabins } from "../../services/apiCabins";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 const CreateCabinForm = () => {
   const { register, handleSubmit, reset } = useForm();
   const queryClient = useQueryClient();
@@ -9,40 +10,71 @@ const CreateCabinForm = () => {
   const { isLoading, mutate } = useMutation({
     mutationFn: createCabins,
     onSuccess: () => {
+      toast.success("cabin has been created successfully");
       queryClient.invalidateQueries({ queryKey: ["cabins"] });
     },
+    onError: (err) => toast.error(err.message),
   });
   const handleData = (data) => {
-    mutate(data);
+    //console.log(data.image[0].name)
+    mutate({ ...data, image: data.image[0] });
     reset();
   };
   return (
     <form
       onSubmit={handleSubmit(handleData)}
-      className="flex flex-col gap-4 mt-4 p-5"
+      className=" bg-slate-200 flex flex-col items-center justify-center gap-4 mt-4 p-5  shadow-lg"
     >
       <div>
-        <label htmlFor="name">name</label>
-        <input type="text" id="name" {...register("name")} />
+        <p>name</p>
+        <input
+          type="text"
+          id="name"
+          placeholder="Cabins name"
+          {...register("name", { required: "the field is required" })}
+        />
       </div>
       <div>
-        <label htmlFor="max">Max Capacity</label>
-        <input type="number" id="max" {...register("maxCapacity")} />
+        <p>Max Capacity</p>
+        <input
+          type="number"
+          id="maxCapacit"
+          {...register("maxCapacity", {
+            required: "the field is required",
+            min: 1,
+            max: 20,
+          })}
+        />
       </div>
       <div>
-        <label htmlFor="name">Regular Price</label>
-        <input type="number" id="name" {...register("regularPrice")} />
+        <p>Regular Price</p>
+        <input
+          type="number"
+          id="regularPrice"
+          {...register("regularPrice", { required: "the field is required" })}
+        />
       </div>
       <div>
-        <label htmlFor="name">Discount</label>
-        <input type="number" id="name" {...register("discount")} />
+        <p>Discount</p>
+        <input
+          type="number"
+          defaultValue={0}
+          id="discount"
+          {...register("discount", { required: "the field is required" })}
+        />
       </div>
       <div>
-        <label htmlFor="name">Image</label>
-        <input type="file" id="name" />
+        <p>Image</p>
+        <input
+          type="file"
+          id="image"
+          {...register("image", { required: "the field is required" })}
+        />
       </div>
       <div>
-        <button className="bg-black text-white p-1">Add new cabin</button>
+        <button className="bg-black text-white p-1" disabled={isLoading}>
+          Add new cabin
+        </button>
       </div>
     </form>
   );
