@@ -5,20 +5,26 @@ import CabinTable from "../features/cabins/CabinTable";
 import CreateCabinForm from "../features/cabins/CreateCabinForm";
 import { useState } from "react";
 import CabinRow from "../features/cabins/CabinRow";
+import { useSearchParams } from "react-router-dom";
 
 const Cabins = () => {
   const [showForm, setShowForm] = useState(false);
+  const [searchParams] = useSearchParams()
   const cabins = useQuery({
     queryKey: ["cabins"],
     queryFn: getCabins,
   });
  
-
+ const filterValue  = searchParams.get('discount') || 'all'
+ let filterCabins;
+ if(filterValue === "all") filterCabins = cabins.data;
+ if(filterValue === "noDiscount") filterCabins = cabins.data.filter((cabin)=>cabin.discount == 0);
+ if(filterValue === "withDiscount") filterCabins = cabins.data.filter((cabin)=>cabin.discount >0)
   return (
     <div className="">
       <CabinTable />
       <ul className="p-5 border-1">
-        {cabins.data?.map(
+        {filterCabins?.map(
           ( cabin) =>  <div key={cabin.id}><CabinRow cabin={cabin}/></div>
         )}
       </ul>
@@ -28,7 +34,7 @@ const Cabins = () => {
       >
         Add new Cabin
       </button>
-      {showForm && <CreateCabinForm />}
+       {showForm && <CreateCabinForm />}
     </div>
   );
 };

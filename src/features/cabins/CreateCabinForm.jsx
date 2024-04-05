@@ -3,8 +3,13 @@ import { useForm } from "react-hook-form";
 import { createCabins } from "../../services/apiCabins";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-const CreateCabinForm = () => {
-  const { register, handleSubmit, reset } = useForm();
+import { da } from "date-fns/locale";
+const CreateCabinForm = ({ cabinToEdit = {} }) => {
+  const { id: editId, ...editValues } = cabinToEdit;
+  const isEditsession = Boolean(editId);
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: isEditsession ? editValues : {},
+  });
   const queryClient = useQueryClient();
 
   const { isLoading, mutate } = useMutation({
@@ -16,9 +21,16 @@ const CreateCabinForm = () => {
     onError: (err) => toast.error(err.message),
   });
   const handleData = (data) => {
+    const image = typeof data.image === "string" ? data.image : data.image[0];
     //console.log(data.image[0].name)
-    mutate({ ...data, image: data.image[0] });
-    reset();
+    if(isEditsession){
+      mutate({ ...data, image: image ,id: editId});
+      reset();
+    }else{
+      mutate({ ...data, image: image });
+      reset();
+    }
+  
   };
   return (
     <form
@@ -68,12 +80,12 @@ const CreateCabinForm = () => {
         <input
           type="file"
           id="image"
-          {...register("image", { required: "the field is required" })}
+          {...register("image", { required: isEditsession ? false : "the field is required" })}
         />
       </div>
       <div>
         <button className="bg-black text-white p-1" disabled={isLoading}>
-          Add new cabin
+          {isEditsession ? 'Edit Cabin' : 'Create new cabin'}
         </button>
       </div>
     </form>

@@ -10,17 +10,26 @@ export const getCabins = async () => {
   return data;
 };
 
-export const createCabins = async (newcabin) => {
+export const createCabins = async (newcabin, id) => {
   //creating new cabins
-  const imageName = `${Math.random()}-${newcabin.image.name}`.replace(
+  const hasimagePath = newcabin.image?.startWith?.(supabaseUrl);
+  const imageName = `${Math.random()}-${newcabin.image.name}`.replaceAll(
     "/",
     ""
   );
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabinsImages/${imageName}`;
-  const { data, error } = await supabase
-    .from("cabins")
-    .insert([{ ...newcabin, image: imagePath }])
-    .select();
+
+  const imagePath = hasimagePath
+    ? newcabin.image
+    : `${supabaseUrl}/storage/v1/object/public/cabinsImages/${imageName}`;
+
+  //create cabin
+  // 1. Create/edit cabin
+  let query = supabase.from("cabins");
+
+  if (!id) query = query.insert([{ ...newcabin, image: imagePath }]);
+  if (id) query = query.update({ ...newcabin, image: imagePath }).eq("id", id);
+
+  const { data, error } = await query.select().single();
   if (error) {
     console.error(error);
     throw new Error("Error creating data from cabins");
@@ -39,6 +48,8 @@ export const createCabins = async (newcabin) => {
   }
   return data;
 };
+
+// delete  a cabins
 export const deleteCabins = async (id) => {
   const { data, error } = await supabase.from("cabins").delete().eq("id", id);
   if (error) {
